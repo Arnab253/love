@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For My Valentine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --primary: #ff4757;
+            --secondary: #ff6b81;
+            --glass: rgba(255, 255, 255, 0.7); 
+            --text-color: #d6336c;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #ffe6e9;
+            background-size: 25px 25px;
+            margin: 0; padding: 0; min-height: 100vh;
+            color: var(--text-color);
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- BACKGROUND --- */
+        #photo-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            z-index: -1; pointer-events: none; overflow: hidden;
+            transform: translateZ(0); 
+        }
+
+        .floating-photo {
+            position: absolute; bottom: -150px; border-radius: 50%; 
+            object-fit: cover; opacity: 0.6; 
+            border: 2px solid rgba(255,255,255,0.8);
+            will-change: transform; 
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-120vh) rotate(360deg); }
+        }
+
+        /* LOGIN SCREEN */
+        #login-screen {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100vh; width: 100%; position: fixed; top: 0; left: 0;
+            background: #fff0f3; z-index: 999; transition: opacity 0.5s ease;
+        }
+
+        .login-box {
+            background: white; padding: 30px; border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.15);
+            border: 2px solid #ffccd5; width: 85%; max-width: 350px; text-align: center;
+        }
+
+        h1 { font-family: 'Dancing Script', cursive; font-size: 2.8rem; margin: 0 0 15px 0; color: var(--primary); }
+
+        input {
+            padding: 12px; border-radius: 50px; border: 2px solid #ffccd5; 
+            width: 80%; text-align: center; font-size: 1.1rem; outline: none; color: var(--primary);
+        }
+        input:focus { border-color: var(--primary); }
+
+        button.main-btn {
+            background: var(--primary); color: white;
+            padding: 12px 30px; border: none; border-radius: 50px; font-size: 1.1rem;
+            margin-top: 20px; cursor: pointer; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3); font-weight: 600;
+        }
+        button.main-btn:active { transform: scale(0.9); }
+
+        /* MAIN APP */
+        #main-app { display: none; padding-bottom: 80px; opacity: 0; transition: opacity 0.8s; }
+
+        header {
+            background: rgba(255, 255, 255, 0.9); padding: 12px; 
+            position: sticky; top: 0; z-index: 100; 
+            display: flex; justify-content: center; gap: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            background: transparent; color: var(--text-color); border: 1px solid transparent;
+            padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: 600; 
+            font-size: 0.9rem; transition: 0.2s;
+        }
+        .nav-btn.active { background: var(--primary); color: white; }
+
+        .section {
+            display: none; padding: 20px; max-width: 800px; margin: 0 auto;
+            text-align: center;
+        }
+        .section.active-section { display: block; }
+
+        /* --- WEEK GRID --- */
+        .week-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; margin-top: 20px;
+        }
+        @media (min-width: 600px) { .week-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .day-card-btn {
+            background: var(--glass);
+            border: 2px solid white; border-radius: 18px;
+            padding: 15px; cursor: pointer; text-align: left;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 110px;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.05);
+            transition: all 0.2s ease-in-out;
+            opacity: 0; transform: translateY(20px);
+            animation: popIn 0.5s forwards;
+            -webkit-user-select: none; /* Prevents text highlighting on touch */
+            user-select: none;
+        }
+
+        /* --- THE DEEP COLOR TOUCH EFFECT --- */
+        .day-card-btn:active { 
+            transform: scale(0.95) !important; 
+            background: var(--primary) !important; /* Deep Pink Background */
+            border-color: var(--primary) !important;
+            box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+        }
+        
+        /* Change Text Color on Touch */
+        .day-card-btn:active .card-title,
+        .day-card-btn:active .card-date {
+            color: white !important;
+        }
+
+        /* Change Icon Color on Touch */
+        .day-card-btn:active .card-icon {
+            stroke: white !important;
+            transform: scale(1.1);
+        }
+
+        /* Staggered Animation Delays */
+        .day-card-btn:nth-child(1) { animation-delay: 0.1s; }
+        .day-card-btn:nth-child(2) { animation-delay: 0.2s; }
+        .day-card-btn:nth-child(3) { animation-delay: 0.3s; }
+        .day-card-btn:nth-child(4) { animation-delay: 0.4s; }
+        .day-card-btn:nth-child(5) { animation-delay: 0.5s; }
+        .day-card-btn:nth-child(6) { animation-delay: 0.6s; }
+        .day-card-btn:nth-child(7) { animation-delay: 0.7s; }
+        .day-card-btn:nth-child(8) { animation-delay: 0.8s; }
+
+        @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
+
+        .card-icon { width: 35px; height: 35px; margin-bottom: 8px; stroke: var(--primary); stroke-width: 2; transition: 0.3s; }
+        .card-title { font-family: 'Dancing Script', cursive; font-size: 1.5rem; margin: 0; color: var(--primary); transition: 0.2s; }
+        .card-date { font-size: 0.8rem; color: #888; margin-bottom: 3px; transition: 0.2s; }
+
+        /* --- GALLERY --- */
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; margin-top: 20px;
+        }
+        .gallery-thumb {
+            width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 12px;
+            border: 3px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .gallery-thumb:active { transform: scale(0.95); }
+
+        /* --- OVERLAY & LETTER --- */
+        #full-page-overlay, #letter-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000; overflow-y: auto; text-align: center;
+        }
+        #full-page-overlay { background-color: #fff0f3; animation: slideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        
+        #letter-overlay {
+            background: rgba(0,0,0,0.6); 
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            display: none; /* Flex when active */
+            align-items: center; justify-content: center;
+        }
+
+        .letter-paper {
+            background: #fffdf0; width: 85%; max-width: 500px;
+            padding: 30px 20px; border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            transform: scale(0.8); opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background-image: linear-gradient(#999 0.05em, transparent 0.1em);
+            background-size: 100% 2em;
+            line-height: 2em;
+            text-align: left;
+            max-height: 80vh; overflow-y: auto;
+        }
+        .letter-paper.open { transform: scale(1); opacity: 1; }
+
+        .letter-text {
+            font-family: 'Dancing Script', cursive; font-size: 1.5rem; color: #444;
+            margin-top: 40px; white-space: pre-wrap;
+        }
+        
+        .close-letter {
+            position: absolute; top: 10px; right: 15px; 
+            font-size: 1.5rem; color: #ff4757; cursor: pointer; border: none; background: none;
+        }
+
+        .page-content { 
+            max-width: 600px; margin: 0 auto; padding: 20px; 
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+        }
+
+        .page-image {
+            width: 100%; max-height: 50vh; object-fit: contain; 
+            border-radius: 15px; border: 4px solid white; background: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin-bottom: 20px;
+        }
+
+        .page-title { font-family: 'Dancing Script'; font-size: 2.5rem; color: var(--primary); margin: 10px 0; }
+        
+        .page-text {
+            font-size: 1.1rem; line-height: 1.5; font-style: italic; color: #555;
+            background: white; padding: 20px; border-radius: 15px; width: 100%; box-sizing: border-box;
+            border: 1px solid #ffccd5;
+        }
+
+        .back-btn {
+            background: white; color: var(--primary); padding: 8px 25px;
+            border-radius: 50px; font-weight: bold; cursor: pointer; border: 2px solid var(--primary);
+            font-size: 0.9rem; margin-bottom: 15px; align-self: flex-start;
+        }
+        .back-btn:active { background: var(--primary); color: white; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    </style>
+</head>
+<body ontouchstart=""> 
+
+    <audio id="bg-music" loop>
+        <source src="song.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="photo-container"></div>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Love Access ❤️</h1>
+            <p>Enter your beautiful name to see the magic:</p>
+            <input type="text" id="username" placeholder="Your Name please" autocomplete="off">
+            <br>
+            <button class="main-btn" onclick="login()">Start Magic</button>
+        </div>
+    </div>
+
+    <div id="main-app">
+        <header>
+            <button class="nav-btn active" onclick="showSection('home', this)">Home</button>
+            <button class="nav-btn" onclick="showSection('week', this)">Week</button>
+            <button class="nav-btn" onclick="showSection('gallery', this)">Gallery</button>
+        </header>
+
+        <div id="home" class="section active-section" style="margin-top:20px; animation: fadeIn 0.5s;">
+            <h1 id="welcome-msg">Hellow! </h1>
+            <div style="background: rgba(255,255,255,0.85); padding: 25px; border-radius: 20px; border: 2px solid white;">
+                <p><h2>Your special person made this website only for you</h2><br>He loves you soo much....</p>
+                <p style="font-size: 1.1rem; color: #555;">"You are the reason thats why his world is so beautiful. Your love is the magic that makes every moment special."</p>
+                <p><h2>Ma'am......Hope you will be happy by explore the website</h2><br>so let's go.....<br>please click on the week section</p>
+            </div>
+        </div>
+
+        <div id="week" class="section">
+            <h1>Here is some wishes for Valentine's Week</h1>
+            <div class="week-grid">
+                <div class="day-card-btn" onclick="openPage('rose')">
+                    <span class="card-date">Feb 07</span>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none"><path d="M12 2L12 22 M12 6C12 6 8 2 8 6C8 9 12 12 12 12C12 12 16 9 16 6C16 2 12 6 12 6Z" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14C12 14 9 16 7 14 M12 18C12 18 15 16 17 18" stroke-linecap="round"/></svg>
+                    <h3 class="card-title">Rose</h3>
+                </div>
+                <div class="day-card-btn" onclick="openPage('propose')">
+                    <span class="card-date">Feb 08</span>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="var(--primary)" stroke-width="2"></path></svg>
+                    <h3 class="card-title">Propose</h3>
+                </div>
+                <div class="day-card-btn" onclick="openPage('chocolate')">
+                    <span class="card-date">Feb 09</span>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1" ry="1"></rect><line x1="12" y1="8" x2="12" y2="21"></line><path d="M12 8L7.5 3 12 3 16.5 8"></path></svg>
+                    <h3 class="card-title">Choco</h3>
+                </div>
+                <div class="day-card-btn" onclick="openPage('teddy')">
+                    <span class="card-date">Feb 10</span>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"></circle><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="7" r="3"></circle><path d="M10 14h4"></path></svg>
+                    <h3 class="card-title">Teddy</h3>
+                </div>
+                <div class="day-card-btn" onclick="openPage('promise')">
+                    <span class="card-date">Feb 11</span>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15 8L21 9L17 14L18 20L12 17L6 20L7 14L3 9L9 8L12 2Z"></path></svg>
+                    <h3 class="card-title">Promise</h3>
+                </div>
+                <div class="day-card-btn" onclick="openPage('hug')">
+                    <span class="card-date">Feb 12</span>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14C4 14 6 10 12 10C18 10 20 14 20 14 M4 18C4 18 6 14 12 14C18 14 20 18 20 18" stroke-linecap="round"/><circle cx="12" cy="7" r="3"></circle></svg>
+                    <h3 class="card-title">Hug</h3>
+                </div>
+                <div class="day-card-btn" onclick="openPage('kiss')">
+                    <span class="card-date">Feb 13</span>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path><path d="M8 12h8" stroke-width="1"></path></svg>
+                    <h3 class="card-title">Kiss</h3>
+                </div>
+                <div class="day-card-btn" onclick="openPage('valentine')">
+                    <span class="card-date">Feb 14</span>
+                    <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path><path d="M12 5L12 21" stroke-width="1" stroke-dasharray="2 2"></path></svg>
+                    <h3 class="card-title">Valentine</h3>
+                </div>
+            </div>
+        </div>
+
+        <div id="gallery" class="section">
+            <h1>Our Memories</h1>
+            <h2>you can check those post by clicking on those images</h2>
+            <div class="gallery-grid">
+                <img class="gallery-thumb" src="g1.jpg" onclick="openMemory(0)" loading="lazy">
+                <img class="gallery-thumb" src="g2.jpg" onclick="openMemory(1)" loading="lazy">
+                <img class="gallery-thumb" src="g3.jpg" onclick="openMemory(2)" loading="lazy">
+                <img class="gallery-thumb" src="g4.jpg" onclick="openMemory(3)" loading="lazy">
+                <img class="gallery-thumb" src="g5.jpg" onclick="openMemory(4)" loading="lazy">
+                <img class="gallery-thumb" src="g6.jpg" onclick="openMemory(5)" loading="lazy">
+                <img class="gallery-thumb" src="g7.jpg" onclick="openMemory(6)" loading="lazy">
+                <img class="gallery-thumb" src="g8.jpg" onclick="openMemory(7)" loading="lazy">
+                <img class="gallery-thumb" src="g9.jpg" onclick="openMemory(8)" loading="lazy">
+                <img class="gallery-thumb" src="g10.jpg" onclick="openMemory(9)" loading="lazy">
+            </div>
+
+            <div style="margin-top: 50px; margin-bottom: 20px;">
+                <button class="main-btn" style="background: white; color: var(--primary); border: 2px solid var(--primary);" onclick="openLetter()">
+                    💌 Read My Letter
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="full-page-overlay">
+        <div class="page-content">
+            <button class="back-btn" onclick="closePage()">⬅ Back</button>
+            <h1 class="page-title" id="fp-title">Title</h1>
+            <img class="page-image" id="fp-image" src="" alt="Memory">
+            <div class="page-text" id="fp-text">Message...</div>
+        </div>
+    </div>
+
+    <div id="letter-overlay">
+        <div class="letter-paper" id="letter-paper">
+            <button class="close-letter" onclick="closeLetter()">✖</button>
+            <div class="letter-text">
+                <b>প্রিয়,</b>
+                <br><br>
+               যদি পারতাম দুঃখ মুছে ,সুখের অপরিসীম আলো লিখতে,
+               লিখে দিতাম তোমার তোর ।
+               কি হবে তোমার সুখ কেড়ে ,ভরিয়ে দিতাম সব সুখ তোমার জীবনে।
+               যদি পারতাম .....একগুচ্ছ তারা এনে ফেলে দিতাম তোমার পায়ে,তুমি হয়তো খুশি হতে।
+               কিন্তু আমিতো তা পারিনা ......
+               পারিনা বলেই  প্রেমিক আমি ,
+               কিংবা কাছের মানুষ ।
+
+               না না আমিও পারি করতে খুশি...
+               দেখবে !?.
+               মনে আছে তোমার জন্য লেখা কবিতা গুলো ,মনে আছে তোমার তরে নিয়ে আসা টক কুল আর সালুক,মনে আছে সেই তোমার তরে তাকিয়ে থাকা অপলক আখির কোণে জড়িয়ে থাকা জল আর জড়িয়ে রাখার গল্পঃ।
+               মনে আছে সেই শীতের ট্রেনে আমার বুকে মাথা গুঁজে নিশ্চিন্তে শুয়ে থাকা তুমি।
+               মনে আছে সবটা !?.
+               যদি মনে থাকে আবারও বলতে চাই ভালোবাসি ........খুব ভালোবাসি ।
+               থেকে যেও .....
+               হয়তো তারাগুচ্ছ হারিয়ে যাবে , ভরিয়ে তুলবো নিজের আলোয় , 
+               পূরণ করব সকল ইচ্ছে ,
+               স্বপ্নসুখে ভরাবো তোয়ায় ❤️
+                <br>
+                ভালোবাসি ❤️🌼
+                <br>
+                তোমার প্রিয়,অর্ণব....
+                <br>
+                <br>Damiunggggar..... unkheeee .....??<br>
+              
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const bubblePhotos = ["p1.jpg", "p2.jpg", "p3.jpg", "p4.jpg", "p5.jpg", "p6.jpg", "p7.jpg", "p8.jpg", "p9.jpg", "p10.jpg", "p11.jpg", "p12.jpg", "p13.jpg"];
+
+        const dayData = {
+            'rose': { title: "Rose Day", text: "A rose for the most beautiful flower in my life.\nYou make my world bloom.", img: "rose.jpg" },
+            'propose': { title: "Propose Day", text: "I don't need paradise because I found you.\nWill you be mine?", img: "propose.jpg" },
+            'chocolate': { title: "Chocolate Day", text: "You are sweeter than any chocolate in this world.", img: "chocolate.jpg" },
+            'teddy': { title: "Teddy Day", text: "I am more cute then teddy, so i think you don't need teddy, because i am here", img: "teddy.jpg" },
+            'promise': { title: "Promise Day", text: "I promise to be your biggest fan and your safe place.", img: "promise.jpg" },
+            'hug': { title: "Hug Day", text: "Sometimes a hug from you is all the medicine I need.", img: "hug.jpg" },
+            'kiss': { title: "Kiss Day", text: "Your kiss is the spark that lights up my soul.", img: "kiss.jpg" },
+            'valentine': { title: "My Valentine", text: "I love you more than words can say.\nI love you  so much..❤️", img: "valentine.jpg" }
+        };
+
+        const galleryData = [
+            { img: "g1.jpg", text: "DATE(9 nov 2022): তোমার সাথে তোলা প্রথম ছবি,মনে আছে সেই মুহূর্ত গুলো !" },
+            { img: "g2.jpg", text: "DATE(11 nov 2022): তোমাকে নিজের করার আপ্রাণ চেষ্টার প্রথম পদক্ষেপ ।" },
+            { img: "g3.jpg", text: "DATE(7 arp 2023): তোমার সাথে কাটানো প্রথম কলেজ ফেষ্ট ।" },
+            { img: "g4.jpg", text: "DATE(10 jun 2023): ওতো অভাবে তীক্ষ্ণ চাহুনি না দিলেও হতো,তুমি এমনিই সুন্দর ,তুমি সুন্দর সবার থেকে,যারা রূপ দেখে সৌন্দর্যতা বিচার করে তারা দেখতে পায় নাকি জানিনা ,কিন্তু যারা মন দেখে সৌন্দর্যতা বিচার করে ,তারা বার বার বলবে সব থেকে সুন্দর! সে যে শুধুই তুমি ।" },
+            { img: "g5.jpg", text: "DATE(21 jul 2023): প্রথম তোমার সাথে কাটানো আমার জন্মদিনের স্মৃতি ।" },
+            { img: "g6.jpg", text: "DATE(27 sept 2023): প্রথম আমার বাড়িতে আপনার পদধুলি পড়েছিল ।" },
+            { img: "g7.jpg", text: "DATE(14 feb 2024): তোমার সাথে কাটানো প্রথম সরস্বতী পূজো ।" },
+            { img: "g8.jpg", text: "DATE(13 march 2024): আবারও তোমাতে বিলীন হওয়ার সেই দিন খানা,মনে পড়ে সেই দিন ,সেই কাটানো বিকেলের পড়ন্ত সূর্যের কিরণের সাথে ঝরে পড়া চোখের জল ,যা বার বার একটাই কথা বলছিলো ...... এবারের মতো ফিরে এসো ।" },
+            { img: "g9.jpg", text: "DATE(17 mar 2024): তোমার সাথে যাওয়া দক্ষিণেশ্বর কালী মন্দির , মা তোমাকে অনেক আশীর্বাদ করুক ,খুব ভালো থেকো তুমি ।" },
+            { img: "g10.jpg", text: "DATE(28 sept 2024): প্রথম আপনার বাড়িতে পদার্পণ করিয়াছিলাম ।" }
+        ];
+
+        // LOGIC
+        function login() {
+            var name = document.getElementById("username").value;
+            if(name.trim() === "") { alert("Please enter your name!"); return; }
+            
+            const loginScreen = document.getElementById("login-screen");
+            loginScreen.style.opacity = '0';
+            setTimeout(() => {
+                loginScreen.style.display = "none";
+                const app = document.getElementById("main-app");
+                app.style.display = "block";
+                setTimeout(() => { app.style.opacity = '1'; }, 50);
+            }, 500);
+
+            document.getElementById("welcome-msg").innerText = "Hello " + name + "!";
+            startBubbles();
+            
+            var music = document.getElementById("bg-music");
+            music.volume = 0.5;
+            music.play().catch(e => console.log("Music waiting for interaction"));
+        }
+
+        function showSection(id, btn) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
+            document.getElementById(id).classList.add('active-section');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            
+            if(id === 'week') {
+                const cards = document.querySelectorAll('.day-card-btn');
+                cards.forEach(card => {
+                    card.style.animation = 'none';
+                    card.offsetHeight; 
+                    card.style.animation = null; 
+                });
+            }
+        }
+
+        function goToWeek() {
+            showSection('week', document.querySelectorAll('.nav-btn')[1]);
+        }
+
+        function openPage(key) {
+            const data = dayData[key];
+            if(data) showOverlay(data.title, data.img, data.text);
+        }
+
+        function openMemory(index) {
+            const data = galleryData[index];
+            if(data) showOverlay("Sweet Memory", data.img, data.text);
+        }
+
+        function showOverlay(title, img, text) {
+            document.getElementById("fp-title").innerText = title;
+            document.getElementById("fp-text").innerText = text;
+            const imgEl = document.getElementById("fp-image");
+            imgEl.src = ""; 
+            imgEl.src = img;
+            imgEl.onerror = function() { this.src = "https://via.placeholder.com/400?text=Photo+Missing"; }
+            document.getElementById("full-page-overlay").style.display = "block";
+            document.body.style.overflow = "hidden";
+        }
+
+        function closePage() {
+            document.getElementById("full-page-overlay").style.display = "none";
+            document.body.style.overflow = "auto";
+        }
+
+        // --- LETTER LOGIC ---
+        function openLetter() {
+            const overlay = document.getElementById("letter-overlay");
+            const paper = document.getElementById("letter-paper");
+            overlay.style.display = "flex";
+            setTimeout(() => { paper.classList.add("open"); }, 50);
+        }
+
+        function closeLetter() {
+            const overlay = document.getElementById("letter-overlay");
+            const paper = document.getElementById("letter-paper");
+            paper.classList.remove("open");
+            setTimeout(() => { overlay.style.display = "none"; }, 300);
+        }
+
+        // --- BUBBLES LOGIC ---
+        function startBubbles() {
+            const container = document.getElementById('photo-container');
+            container.style.height = window.innerHeight + 'px';
+            
+            if(container.children.length > 0) return;
+
+            const bubbleCount = window.innerWidth < 600 ? 12 : 20;
+
+            for(let i=0; i<bubbleCount; i++) {
+                let img = document.createElement('img');
+                let randomPhoto = bubblePhotos[Math.floor(Math.random() * bubblePhotos.length)];
+                img.src = randomPhoto;
+                img.classList.add('floating-photo');
+                
+                let size = Math.random() * 50 + 40; 
+                img.style.width = size + 'px';
+                img.style.height = size + 'px';
+                img.style.left = Math.random() * 90 + 'vw';
+                img.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                img.style.animationDelay = (Math.random() * 10) + 's';
+                
+                container.appendChild(img);
+            }
+        }
+    </script>
+</body>
+</html>
